@@ -1,8 +1,6 @@
-#import aiohttp
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
-#import json
 
 bot = Bot(token='1110437563:AAHRe3H8X5MUSstLnqy0c1fSyIyCNIBxxmc')
 dp = Dispatcher(bot)
