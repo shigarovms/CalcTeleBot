@@ -5,7 +5,7 @@ btnDelete = InlineKeyboardButton(text='Удалить', callback_data='Удал�
 
 
 # MAIN MENU
-btnGoToCalc = InlineKeyboardButton(text='Начать ввод', callback_data='Калькулятор')
+btnGoToCalc = InlineKeyboardButton(text='Начать ввод', callback_data='Начать ввод')
 mainMenu = InlineKeyboardMarkup(row_width=1).add(btnGoToCalc)
 
 
@@ -31,7 +31,7 @@ btnMult_ = InlineKeyboardButton(text='*', callback_data='input*')
 btnPlus_ = InlineKeyboardButton(text='+', callback_data='input+')
 
 btnDot = InlineKeyboardButton(text='.', callback_data='input.')
-btnEqu = InlineKeyboardButton(text='=', callback_data='calculate')
+btnEqu = InlineKeyboardButton(text='=️', callback_data='calculate')
 
 calcKeyboard = InlineKeyboardMarkup(row_width=4).add(btnOpen_, btnClose, btnEmpty, btnDelet,
                                                   btn7, btn8, btn9, btnDiv__,
