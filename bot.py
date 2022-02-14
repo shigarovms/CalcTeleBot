@@ -1,5 +1,6 @@
 # Telegram bot, that calculates
 
+from time import sleep
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor, exceptions
@@ -42,6 +43,14 @@ async def process_help_command(message: types.Message):
                          'Отправляй его мне без знака = в конце - я посчитаю. '
                          '\n\nПример: ((34/2-15)**3',
                          reply_markup=inline_nav.calcKeyboard)
+    await bot.send_message(message.from_user.id, 'Готов считать!')
+
+
+# Защита от quit()
+@dp.message_handler(regexp=r'\w+\(\)\w*')
+async def quit_protection(message: types.Message):
+    await bot.send_message(message.from_user.id, 'Хорошая попытка, мистер хаккер! Но меня так лекго не выключить.',
+                           reply_markup=inline_nav.calcKeyboard)
     await bot.send_message(message.from_user.id, 'Готов считать!')
 
 
@@ -97,27 +106,40 @@ async def delete_from_expression(call: types.callback_query):
 # calculate callback - вычисляем выражение
 @dp.callback_query_handler(text_contains='calculate')
 async def expression_calculate(call: types.callback_query):
-
-    try:
-        x = eval(exp_text[call.from_user.id])
-        if x - int(x) == 0:
-            answer = int(x)
-        else:
-            answer = x
-    except ZeroDivisionError:
-        answer = 'делить на ноль нельзя! не я это придумал 😁'
-    except Exception:
-        await bot.answer_callback_query(callback_query_id=call.id,
-                                        text=f'Ума не приложу, как такое посчитать:\n\n{exp_text[call.from_user.id]}',
-                                        show_alert=True)
-        answer = 'Готов считать!'
+    if exp_text[call.from_user.id] == '' or exp_text[call.from_user.id] == 'quit()':
+        return
     else:
-        answer = f'{exp_text[call.from_user.id]}={answer}'
+
+        try:
+            x = eval(exp_text[call.from_user.id])
+            if x - int(x) == 0:
+                answer = int(x)
+            else:
+                answer = x
+        except ZeroDivisionError:
+            answer = 'делить на ноль нельзя! не я это придумал 😁'
+        except Exception:
+            await bot.answer_callback_query(callback_query_id=call.id,
+                                            text=f'Ума не приложу, как такое посчитать:'
+                                                 f'\n\n{exp_text[call.from_user.id]}',
+                                            show_alert=True)
+            answer = f'{exp_text[call.from_user.id]}' \
+                     f'\n🙄'
+            await bot.edit_message_text(text=answer,
+                                        message_id=(call.message.message_id + 1),
+                                        chat_id=call.from_user.id)
+            sleep(3)
+            await bot.edit_message_text(text=exp_text[call.from_user.id],
+                                        message_id=(call.message.message_id + 1),
+                                        chat_id=call.from_user.id)
+            return
+        else:
+            answer = f'{exp_text[call.from_user.id]}={answer}'
+            # Обнуляем строку ввода
+            exp_text[call.from_user.id] = ''
 
     await bot.edit_message_text(text=answer, message_id=(call.message.message_id + 1),
                                 chat_id=call.from_user.id)
-    # Обнуляем строку ввода
-    exp_text[call.from_user.id] = ''
 
 
 if __name__ == '__main__':
