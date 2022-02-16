@@ -1,7 +1,6 @@
 
 
 from re import match
-# from sympy import sympify
 
 
 def exp_calculator(text):

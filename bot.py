@@ -5,12 +5,9 @@ from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor, exceptions
 from aiogram.types import ContentType, File, Message
-from pathlib import Path
 from converter import text_from_ogg
-from sympy import sympify
 from os import remove
 from calculations import exp_calculator
-# import markup as nav
 import InlineMarkup as inline_nav
 
 bot = Bot(token='1110437563:AAHRe3H8X5MUSstLnqy0c1fSyIyCNIBxxmc')
