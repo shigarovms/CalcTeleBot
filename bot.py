@@ -4,6 +4,12 @@ from time import sleep
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor, exceptions
+from aiogram.types import ContentType, File, Message
+from pathlib import Path
+from converter import text_from_ogg
+from sympy import sympify
+from os import remove
+from calculations import exp_calculator
 # import markup as nav
 import InlineMarkup as inline_nav
 
@@ -28,7 +34,8 @@ async def process_start_command(message: types.Message):
     current_user_id = message.from_user.id
     exp_text[current_user_id] = ''
     # Приветствуем
-    await message.answer('Привет!✋ Я бот-калькулятор. Посчитаю для тебя выражения типа ((34/2-15)**3 или 16*19-177',
+    await message.answer('Привет!✋ Я бот-калькулятор. Посчитаю для тебя выражения типа ((34/2-15)**3 или 16*19-177'
+                         '\n\nЕще я обрабатываю голосовые сообщения! 144-27 или "5% от 169" Попробуй! ',
                          reply_markup=inline_nav.calcKeyboard)
 
     await bot.send_message(message.from_user.id, 'Готов считать!')
@@ -41,6 +48,7 @@ async def process_help_command(message: types.Message):
                          '\nПосле того как нажмешь = я посчитаю твое выражение, если оно арифметически верно. '
                          '\nТакже можешь ввести выражение в поле "Сообщение" внизу. '
                          'Отправляй его мне без знака = в конце - я посчитаю. '
+                         '\n\nЕще я обрабатываю голосовые сообщения! 144-27 или 5% от 169 Попробуй! '
                          '\n\nПример: ((34/2-15)**3',
                          reply_markup=inline_nav.calcKeyboard)
     await bot.send_message(message.from_user.id, 'Готов считать!')
@@ -57,18 +65,19 @@ async def quit_protection(message: types.Message):
 # Обработчик сообщения из текстового поля
 @dp.message_handler()
 async def response_message(message: types.Message):
-    try:
-        x = eval(message.text)
-        if x - int(x) == 0:
-            answer = int(x)
-        else:
-            answer = x
-    except ZeroDivisionError:
-        answer = 'делить на ноль нельзя! не я это придумал 😁'
-    except Exception:
-        answer = 'Я умею считать арифметические выражения такие как (34/2-15)**3 или 33%3-7//4'
-    else:
-        answer = f'Готово! Посчитал! Вычислил! Вот, что у меня вышло: {message.text}={answer}'
+    answer = exp_calculator(message.text)
+    # try:
+    #     x = eval(message.text)
+    #     if x - int(x) == 0:
+    #         answer = int(x)
+    #     else:
+    #         answer = x
+    # except ZeroDivisionError:
+    #     answer = 'делить на ноль нельзя! не я это придумал 😁'
+    # except Exception:
+    #     answer = 'Я умею считать арифметические выражения такие как (34/2-15)**3 или 33%3-7//4'
+    # else:
+    #     answer = f'Готово! Посчитал! Вычислил! Вот, что у меня вышло: {message.text}={answer}'
     await bot.send_message(message.from_user.id, answer, reply_markup=inline_nav.calcKeyboard)
     await bot.send_message(message.from_user.id, 'Готов считать!')
 
@@ -140,6 +149,16 @@ async def expression_calculate(call: types.callback_query):
 
     await bot.edit_message_text(text=answer, message_id=(call.message.message_id + 1),
                                 chat_id=call.from_user.id)
+
+
+@dp.message_handler(content_types=[ContentType.VOICE])
+async def voice_message_handler(message: Message):
+    voice = await message.voice.get_file()
+    await bot.download_file(file_path=voice.file_path, destination=f'{voice.file_id}.ogg')
+    expression = text_from_ogg(f'{voice.file_id}.ogg')
+    remove(f'{voice.file_id}.ogg')
+    answer = exp_calculator(expression)
+    await bot.send_message(message.from_user.id, answer)
 
 
 if __name__ == '__main__':
