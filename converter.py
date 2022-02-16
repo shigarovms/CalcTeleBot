@@ -1,6 +1,7 @@
 from os import remove
 from pydub import AudioSegment
 import speech_recognition as sr
+import ffmpeg
 
 
 def ogg_to_flac(file):

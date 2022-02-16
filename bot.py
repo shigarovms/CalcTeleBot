@@ -10,6 +10,7 @@ from os import remove
 from calculations import exp_calculator
 import InlineMarkup as inline_nav
 
+
 bot = Bot(token='1110437563:AAHRe3H8X5MUSstLnqy0c1fSyIyCNIBxxmc')
 dp = Dispatcher(bot)
 exp_text = {}
