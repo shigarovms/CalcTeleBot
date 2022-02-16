@@ -149,14 +149,14 @@ async def expression_calculate(call: types.callback_query):
                                 chat_id=call.from_user.id)
 
 
-@dp.message_handler(content_types=[ContentType.VOICE])
-async def voice_message_handler(message: Message):
-    voice = await message.voice.get_file()
-    await bot.download_file(file_path=voice.file_path, destination=f'{voice.file_id}.ogg')
-    expression = text_from_ogg(f'{voice.file_id}.ogg')
-    remove(f'{voice.file_id}.ogg')
-    answer = exp_calculator(expression)
-    await bot.send_message(message.from_user.id, answer)
+# @dp.message_handler(content_types=[ContentType.VOICE])
+# async def voice_message_handler(message: Message):
+#     voice = await message.voice.get_file()
+#     await bot.download_file(file_path=voice.file_path, destination=f'{voice.file_id}.ogg')
+#     expression = text_from_ogg(f'{voice.file_id}.ogg')
+#     remove(f'{voice.file_id}.ogg')
+#     answer = exp_calculator(expression)
+#     await bot.send_message(message.from_user.id, answer)
 
 
 if __name__ == '__main__':
