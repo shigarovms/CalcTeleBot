@@ -17,7 +17,7 @@ import VARS
 # TODO Get token from Heroku config variables
 # TOKEN = S3Connection(os.environ[''])
 # print(type(TOKEN))
-bot = Bot(token=os.environ('TOKEN'))
+bot = Bot(token=os.environ['TOKEN'])
 # bot = Bot(token=VARS.TOKEN)
 dp = Dispatcher(bot)
 
