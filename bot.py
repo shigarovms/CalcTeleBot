@@ -74,8 +74,12 @@ async def response_message(message: types.Message):
 # 1 input callback - добавляем символ к выражению в строке ввода
 @dp.callback_query_handler(text_contains='input')
 async def expression_consrtuctor_keys(call: types.callback_query):
+    id = call.from_user.id
     symbToAdd = call.data[-1]
-    exp_text[call.from_user.id] += symbToAdd
+    if id in exp_text:
+        exp_text[call.from_user.id] += symbToAdd
+    else:
+        exp_text[call.from_user.id] = symbToAdd
     await bot.edit_message_text(text=exp_text[call.from_user.id],
                                 message_id=(call.message.message_id + 1),
                                 chat_id=call.from_user.id)
