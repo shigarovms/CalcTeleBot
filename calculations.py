@@ -8,6 +8,7 @@ def text_prepared(text):
     expression = expression.replace(' х ', '*')
     expression = expression.replace(' x ', '*')
     expression = expression.replace(',', '.')
+    expression = expression.replace('плюс', '+')
     expression = expression.replace('минус', '-')
 
     expression = expression.replace(' процентов', '%')
@@ -28,12 +29,13 @@ def procent_calc(exp):
     return x
 
 
+# TODO сделать кнопку ans и команду "ответ..." чтобы использовать результат предыдущего вычисления в новом
 def exp_calculator(text):
     expression = text_prepared(text)
 
     # Проверим, подходит ли строка типа "5% от 69"
     if match(r'\d*.*\d+%\W\w+\W\d+', expression):
-        answer = f'{text} = {procent_calc(expression)}'
+        answer = f'Готово! {text} = {procent_calc(expression)}'
         return answer
     try:
         x = eval(expression)
@@ -41,7 +43,7 @@ def exp_calculator(text):
     except ZeroDivisionError:
         answer = 'делить на ноль нельзя! не я это придумал 😁'
     except Exception:
-        answer = f'{expression} ...хммм\nЯ умею считать арифметические выражения такие как (34/2-15)**3 или 33%3-7//4'
+        answer = f'{expression} ...хммм\nЯ умею считать арифметические выражения, такие как (34/2-15)**3 или 33%3-7//4'
     else:
         answer = f'Готово! Вот, что у меня вышло: {expression} = {x}'
 

@@ -11,18 +11,24 @@ from os import remove
 from converter import text_from_ogg
 from calculations import exp_calculator
 from InlineMarkup import calcKeyboard
+import VARS
 
+
+# TODO Get token from Heroku config variables
 # TOKEN = S3Connection(os.environ[''])
 # print(type(TOKEN))
-bot = Bot(token='1110437563:AAHRe3H8X5MUSstLnqy0c1fSyIyCNIBxxmc')
+bot = Bot(token=os.environ('TOKEN'))
+# bot = Bot(token=VARS.TOKEN)
 dp = Dispatcher(bot)
+
+# TODO make ExpressionTexts Database
 exp_text = {}
 
 
 # Список команд
 async def setup_bot_commands(dp):
     bot_commands = [
-        types.BotCommand(command="/start", description="С чистого листа"),
+        types.BotCommand(command="/start", description="С чистого листа. Вызвать кнопки"),
         types.BotCommand(command="/help", description="Нужна помощь?")
     ]
     await bot.set_my_commands(bot_commands)
@@ -43,13 +49,14 @@ async def process_start_command(message: types.Message):
     await setup_bot_commands(dp)
 
 # /help
+# TODO добавить возможность оставлять отзывы и предложения
 @dp.message_handler(commands=['help'])
 async def process_help_command(message: types.Message):
     await message.answer('Нажимай циферки, знаки, скобки! '
                          '\nПосле того как нажмешь = я посчитаю твое выражение, если оно арифметически верно. '
                          '\nТакже можешь ввести выражение в поле "Сообщение" внизу. '
                          'Отправляй его мне без знака = в конце - я посчитаю. '
-                         '\n\nЕще я обрабатываю голосовые сообщения! 144-27 или 5% от 169 Попробуй! '
+                         '\n\nЕще я обрабатываю голосовые сообщения! 144-27*10 или 5% от 169 Попробуй! '
                          '\n\nПример: ((34/2-15)**3',
                          reply_markup=calcKeyboard)
     await bot.send_message(message.from_user.id, 'Готов считать!')
@@ -67,8 +74,11 @@ async def quit_protection(message: types.Message):
 @dp.message_handler()
 async def response_message(message: types.Message):
     answer = exp_calculator(message.text)
-    await bot.send_message(message.from_user.id, answer, reply_markup=calcKeyboard)
-    await bot.send_message(message.from_user.id, 'Готов считать!')
+    if 'Готово!' in answer:
+        await bot.send_message(message.from_user.id, answer)
+    else:
+        await bot.send_message(message.from_user.id, answer, reply_markup=calcKeyboard)
+        await bot.send_message(message.from_user.id, 'Готов считать!')
 
 
 # 1 input callback - добавляем символ к выражению в строке ввода
@@ -137,6 +147,8 @@ async def expression_calculate(call: types.callback_query):
 # Обработчик голосового сообщения
 @dp.message_handler(content_types=[ContentType.VOICE])
 async def voice_message_handler(message: Message):
+    # TODO сделать возможным продолжение расчетов голосом. Например в предыдущий раз ответ был 69,
+    #  дальше пользователь шлет сообщение ответ умножить на 54-7 -> *(54-7)
     voice = await message.voice.get_file()
     ogg_file_name = f'{voice.file_id}.ogg'
     await bot.download_file(file_path=voice.file_path, destination=ogg_file_name)
@@ -147,6 +159,7 @@ async def voice_message_handler(message: Message):
         await bot.send_message(message.from_user.id, answer)
     else:
         await bot.send_message(message.from_user.id, answer,  reply_markup=calcKeyboard)
+        await bot.send_message(message.from_user.id, 'Готов считать!')
 
 
 if __name__ == '__main__':
