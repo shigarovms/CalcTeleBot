@@ -4,6 +4,9 @@ import speech_recognition as sr
 import ffmpeg
 
 
+AudioSegment.ffmpeg = "/app/vendor/ffmpeg/bin/ffmpeg"
+
+
 def ogg_to_flac(file):
 
     ogg_audio_file = file
