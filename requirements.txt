@@ -4,4 +4,4 @@ boto~=2.49.0
 ffmpeg~=1.4
 pydub~=0.25.1
 SpeechRecognition~=3.8.1
-ffprobe~=0.5
+

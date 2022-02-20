@@ -134,11 +134,15 @@ async def expression_calculate(call: types.callback_query):
 @dp.message_handler(content_types=[ContentType.VOICE])
 async def voice_message_handler(message: Message):
     voice = await message.voice.get_file()
-    await bot.download_file(file_path=voice.file_path, destination=f'{voice.file_id}.ogg')
-    expression = text_from_ogg(f'{voice.file_id}.ogg')
-    remove(f'{voice.file_id}.ogg')
+    ogg_file_name = f'{voice.file_id}.ogg'
+    await bot.download_file(file_path=voice.file_path, destination=ogg_file_name)
+    expression = text_from_ogg(ogg_file_name)
+    remove(ogg_file_name)
     answer = exp_calculator(expression)
-    await bot.send_message(message.from_user.id, answer)
+    if 'Готово!' in answer:
+        await bot.send_message(message.from_user.id, answer)
+    else:
+        await bot.send_message(message.from_user.id, answer,  reply_markup=calcKeyboard)
 
 
 if __name__ == '__main__':

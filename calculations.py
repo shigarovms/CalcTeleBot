@@ -15,6 +15,7 @@ def text_prepared(text):
     expression = expression.replace(' процент', '%')
     expression = expression.replace('в степени', '**')
     expression = expression.replace('степени', '**')
+    expression = expression.replace('^', '**')
     # print(expression)
     return expression
 
