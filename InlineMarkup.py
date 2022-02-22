@@ -27,7 +27,7 @@ btnEmpty = InlineKeyboardButton(text=' ', callback_data='none')
 btnDelet = InlineKeyboardButton(text='C', callback_data='delete')
 btnDiv__ = InlineKeyboardButton(text='/', callback_data='input/')
 btnMinus = InlineKeyboardButton(text='-', callback_data='input-')
-btnMult_ = InlineKeyboardButton(text='*', callback_data='input*')
+btnMult_ = InlineKeyboardButton(text='x', callback_data='inputx')
 btnPlus_ = InlineKeyboardButton(text='+', callback_data='input+')
 
 btnDot = InlineKeyboardButton(text='.', callback_data='input.')
