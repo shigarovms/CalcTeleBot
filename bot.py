@@ -1,6 +1,7 @@
 # Telegram bot, that calculates
 
-from converter import text_from_ogg
+from os import remove
+from asyncio import sleep
 
 import os
 from aiogram import Bot, types
@@ -8,16 +9,14 @@ from aiogram.dispatcher import Dispatcher, FSMContext
 from aiogram.dispatcher.filters import Command
 from aiogram.utils import executor, exceptions
 from aiogram.types import ContentType, Message, InputFile
-from asyncio import sleep
-from os import remove
-
 from StatesMachine import Support
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from calculations import exp_calculator
 from InlineMarkup import calcKeyboard
-import message_texts
+from converter import text_from_ogg
 
+import message_texts
 
 # TODO сделать английскую версию бота
 bot = Bot(token=os.environ['TOKEN'])
@@ -42,7 +41,6 @@ async def setup_bot_commands(dp):
     await bot.set_my_commands(bot_commands)
 
 
-# TODO добавить возможность оставлять отзывы и предложения
 # /start
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
@@ -51,7 +49,7 @@ async def process_start_command(message: types.Message):
 
     got_answers[current_user_id] = ''
     # Приветствуем
-    await message.answer(text= message_texts.hello_on_start, reply_markup=calcKeyboard)
+    await message.answer(text=message_texts.hello_on_start, reply_markup=calcKeyboard)
     await bot.send_message(message.from_user.id, 'Готов считать!')
     await setup_bot_commands(dp)
 
@@ -74,18 +72,11 @@ async def process_help_command(message: types.Message):
 async def process_help_command(message: types.Message):
     await message.answer(text=message_texts.help_text)
 
-
-# # /support
-# @dp.message_handler(commands=['support'])
-# async def process_help_command(message: types.Message):
-#     await message.answer(text=message_texts.help_text)
-
-
 # ------------------------------------------------------------------------HANDLERS--------------------------------------
 # Защита от quit()
 @dp.message_handler(regexp=r'\w+\(\)\w*')
 async def quit_protection(message: types.Message):
-    await bot.send_message(message.from_user.id, text= message_texts.no_hack_text, reply_markup=calcKeyboard)
+    await bot.send_message(message.from_user.id, text=message_texts.no_hack_text, reply_markup=calcKeyboard)
     await bot.send_message(message.from_user.id, 'Готов считать!')
 
 
@@ -99,7 +90,6 @@ async def talk_to_support(message: types.Message):
 @dp.message_handler(state=Support.ContactSupport)
 # TODO В этот хендлер не попадают аудиосообщения и картинки даже в state=Support.ContactSupport. А должны
 async def forward_to_support(message, state: FSMContext):
-    print('user_voice here')
     if message.text != '/support':
         await message.forward(chat_id=ADMIN_ID)
     await state.finish()
@@ -121,18 +111,18 @@ async def response_message(message: types.Message):
 # 1 input callback - добавляем символ к выражению в строке ввода
 @dp.callback_query_handler(text_contains='input')
 async def expression_constructor_keys(call: types.callback_query):
-    user_id = call.from_user.id
     # Если записи с выражением пользователя не существует, запишем пустую строку
+    user_id = call.from_user.id
     exp_text[user_id] = exp_text[user_id] if user_id in exp_text else ''
 
     edit_msg_id = call.message.message_id + 1
     symb_to_add = call.data[-1]
 
     if len(exp_text[user_id]) > 1 and exp_text[user_id][0] == ' ':
-            if symb_to_add in '+-x/':
-                exp_text[user_id] = exp_text[user_id][1:] + symb_to_add
-            else:
-                exp_text[user_id] = symb_to_add
+        if symb_to_add in '+-x/':
+            exp_text[user_id] = exp_text[user_id][1:] + symb_to_add
+        else:
+            exp_text[user_id] = symb_to_add
     else:
         exp_text[user_id] += symb_to_add
 
@@ -160,7 +150,7 @@ async def delete_from_expression(call: types.callback_query):
 @dp.callback_query_handler(text_contains='calculate')
 async def expression_calculate(call: types.callback_query):
     user_id = call.from_user.id
-    # Изменяем сообщение, следующее за тем, ка которому прикреплена клавиатура
+    # Изменяем сообщение, следующее за тем, к которому прикреплена клавиатура
     edit_msg_id = call.message.message_id + 1
 
     if exp_text[user_id] == '' or exp_text[user_id] == 'quit()':
@@ -183,7 +173,6 @@ async def expression_calculate(call: types.callback_query):
             await bot.edit_message_text(text=exp_text[user_id], message_id=edit_msg_id, chat_id=user_id)
             return
         else:
-            # *bold* _italic_ `fixed width font` [link](http://google.com).
             answer_text = f'`{answer}` = {exp_text[user_id]}'
             # Обнуляем строку ввода
             exp_text[user_id] = f' {answer}'
@@ -194,12 +183,10 @@ async def expression_calculate(call: types.callback_query):
 # Обработчик голосового сообщения
 @dp.message_handler(content_types=[ContentType.VOICE])
 async def voice_message_handler(message: Message):
-    user_id = message.from_user.id
     # Если записи с выражением пользователя не существует, запишем пустую строку
+    user_id = message.from_user.id
     exp_text[user_id] = exp_text[user_id] if user_id in exp_text else ''
 
-    # TODO сделать возможным продолжение расчетов голосом. Например в предыдущий раз ответ был 69,
-    #  дальше пользователь шлет сообщение 'ответ' умножить на 54-7 -> *(54-7)
     # File management голосового сообщения:
     voice = await message.voice.get_file()
     ogg_file = f'{voice.file_id}.ogg'
@@ -222,9 +209,9 @@ async def voice_message_handler(message: Message):
     if 'Готово!' in answer_text:
         await bot.send_message(user_id, answer_text, parse_mode=types.ParseMode.MARKDOWN)
     else:
-        await bot.send_message(user_id, answer_text,  reply_markup=calcKeyboard)
+        await bot.send_message(user_id, answer_text, reply_markup=calcKeyboard)
         await bot.send_message(user_id, 'Готов считать!')
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True, on_startup= setup_bot_commands)
+    executor.start_polling(dp, skip_updates=True, on_startup=setup_bot_commands)

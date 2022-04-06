@@ -1,11 +1,9 @@
 
-# import re
 from re import match, split as resplit
 from numpy import cbrt
 from message_texts import zero_division_text
 
 
-# TODO Решить проблему с млн
 # TODO сделать возможным подсчет типа "корень степени 3 из 2 умножить на 6 + 5"
 
 def text_prepared(text):
@@ -22,9 +20,6 @@ def text_prepared(text):
                     #     TODO ValueError: invalid literal for int() with base 10: 'кубический корень из 2 '
                 expression = expression.replace(sub, new_sub)
 
-    # expression = expression.replace(' х ', '*')        # Делаю это в eval()
-    # expression = expression.replace(' x ', '*')
-    # expression = expression.replace('.', '')          # мешает при использовании ответа с десятичной частью
     expression = expression.replace(',', '.')
     # expression = expression.replace(' млн ', '000000')
     expression = expression.replace('плюс', '+')
@@ -58,7 +53,8 @@ def procent_calc(exp):
 def square_root_calc(exp):
     a = float(exp.split(' ')[-1])
     x = (a ** 2 ** -1)
-    x = int(x) if x - int(x) == 0 else x
+    if x < 0:
+        x = int(x) if x - int(x) == 0 else x
     return x
 
 
@@ -86,22 +82,27 @@ def any_root_calc(exp):
 
 def exp_calculator(text):
     expression = text_prepared(text)
-    # print(expression)
 
     # Проверим, вычисление ли это процента
-    if match(r'\d*.*\d+%\W\w+\W\d*.*\d+', expression):
+    if match(r'\d*.*\d+%(\W\w+)?\W-?\d*.*\d+$', expression):
         result = procent_calc(expression)
         answer_text = f'Готово! `{result}` = {text}'
         return answer_text, f' {result}'
 
+        # Проверим, вычисление ли это целого от процента NEW
+    if match(r'если?\W?\d*.*\d+%(\W\w+)?\W-?\d*.*\d+\W(сколько )?(целое)|(всего)', expression):
+        result = procent_calc(expression)
+        answer_text = f'Готово! Целое: `{result}` , если ' + resplit(r'(сколько )?(целое)|(всего)', text)[0]
+        return answer_text, f' {result}'
+
     # Проверим, вычисление ли это квадратного корня
-    if match(r'квадратный корень\W\w+\W-?\d*.*\d+', expression):
+    if match(r'(квадратный )?корень(\W\w+)?\W-?\d*.?\d+', expression):
         result = square_root_calc(expression)
         answer_text = f'Готово! `{result}` = {text}'
         return answer_text, f' {result}'
 
     # Проверим, вычисление ли это кубического корня
-    if match(r'кубический корень\W\w+\W-?\d*.*\d+', expression):
+    if match(r'кубический корень(\W\w+)?\W-?\d*.*\d+', expression):
         result = cube_root_calc(expression)
         answer_text = f'Готово! `{result}` = {text}'
         return answer_text, f' {result}'
